@@ -1,0 +1,33 @@
+name: Generate Kodi index
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**.zip'
+      - 'getIndex.php'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run PHP index generator
+        run: php getIndex.php
+
+      - name: Commit index.html if it changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "index.html unchanged"
+          else
+            git commit -m "Update index.html"
+            git push
+          fi
